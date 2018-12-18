@@ -37,32 +37,32 @@ class MainWindow(QWidget):
         self.setTempThreshold = QLineEdit()
         # self.lumLCD = [QLCDNumber(), QLCDNumber()]
 
-        airCondSwitch = QPushButton('Temperatura', self)
-        airCondSwitch.resize(airCondSwitch.sizeHint())
-        airCondSwitch.clicked.connect(self.airCondSwitchClicked)
-        airCondSwitch.setIcon(QIcon('imgs/airoff.png'))
-        airCondSwitch.setIconSize(QSize(51,51))
+        self.airCondSwitch = QPushButton('Temperatura', self)
+        self.airCondSwitch.resize(self.airCondSwitch.sizeHint())
+        self.airCondSwitch.clicked.connect(self.airCondSwitchClicked)
+        self.airCondSwitch.setIcon(QIcon('imgs/airoff.png'))
+        self.airCondSwitch.setIconSize(QSize(51,51))
         self.airCondSwitchState = False
         
-        lightSwitch = QPushButton('', self)
-        lightSwitch.resize(lightSwitch.sizeHint())
-        lightSwitch.clicked.connect(self.lightSwitchClicked)
-        lightSwitch.setIcon(QIcon('imgs/luzoff.png'))
-        lightSwitch.setIconSize(QSize(51,51))
+        self.lightSwitch = QPushButton('', self)
+        self.lightSwitch.resize(self.lightSwitch.sizeHint())
+        self.lightSwitch.clicked.connect(self.lightSwitchClicked)
+        self.lightSwitch.setIcon(QIcon('imgs/luzoff.png'))
+        self.lightSwitch.setIconSize(QSize(51,51))
         self.lightSwitchState = False
 
-        lightSwitch2 = QPushButton('', self)
-        lightSwitch2.resize(lightSwitch2.sizeHint())
-        lightSwitch2.clicked.connect(self.lightSwitch2Clicked)
-        lightSwitch2.setIcon(QIcon('imgs/luzoff.png'))
-        lightSwitch2.setIconSize(QSize(51,51))
+        self.lightSwitch2 = QPushButton('', self)
+        self.lightSwitch2.resize(self.lightSwitch2.sizeHint())
+        self.lightSwitch2.clicked.connect(self.lightSwitch2Clicked)
+        self.lightSwitch2.setIcon(QIcon('imgs/luzoff.png'))
+        self.lightSwitch2.setIconSize(QSize(51,51))
         self.lightSwitch2State = False
 
-        gateSwitch = QPushButton('Portão Fechado', self)
-        gateSwitch.resize(gateSwitch.sizeHint())
-        gateSwitch.clicked.connect(self.gateSwitchClicked)
-        gateSwitch.setIcon(QIcon('imgs/gateclosed.png'))
-        gateSwitch.setIconSize(QSize(46,32))
+        self.gateSwitch = QPushButton('Portão Fechado', self)
+        self.gateSwitch.resize(self.gateSwitch.sizeHint())
+        self.gateSwitch.clicked.connect(self.gateSwitchClicked)
+        self.gateSwitch.setIcon(QIcon('imgs/gateclosed.png'))
+        self.gateSwitch.setIconSize(QSize(46,32))
         self.gateSwitchState = False
 
         self.serialIn = QLineEdit(self)
@@ -73,7 +73,7 @@ class MainWindow(QWidget):
         grid.setSpacing(10)
 
         # grid.addWidget(tempLabel, 1, 0)
-        grid.addWidget(airCondSwitch, 1, 0)
+        grid.addWidget(self.airCondSwitch, 1, 0)
         grid.addWidget(self.tempLCD, 1, 1)
         grid.addWidget(QLabel('Limite de Temperatura'), 1, 2)
         grid.addWidget(self.setTempThreshold, 1, 3)
@@ -85,12 +85,12 @@ class MainWindow(QWidget):
         # grid.addWidget(self.lumLCD[1], 3, 1)
 
         grid.addWidget(lightSwitchLabel, 2, 2)
-        grid.addWidget(lightSwitch, 3, 2)
+        grid.addWidget(self.lightSwitch, 3, 2)
         grid.addWidget(lightSwitch2Label, 2, 3)
-        grid.addWidget(lightSwitch2, 3, 3)
+        grid.addWidget(self.lightSwitch2, 3, 3)
 
         # grid.addWidget(gateSwitchLabel, 4, 2)
-        grid.addWidget(gateSwitch, 4, 3)
+        grid.addWidget(self.gateSwitch, 4, 3)
 
         grid.addWidget(panicButton, 5, 1)
 
@@ -118,7 +118,15 @@ class MainWindow(QWidget):
         self.sender().setText('AUTO' if self.modeSwitchState else 'MANUAL')
         self.modeSwitchState = not self.modeSwitchState
         self.sender().setChecked(False)
+        self.disableButtons(not self.modeSwitchState)
+
         return
+
+    def disableButtons(self, disabled):
+        self.airCondSwitch.setDisabled(disabled)
+        self.lightSwitch.setDisabled(disabled)
+        self.lightSwitch2.setDisabled(disabled)
+        self.gateSwitch.setDisabled(disabled)
 
     def lightSwitchClicked(self):
         print(f'{self.sender().text()} was pressed')
