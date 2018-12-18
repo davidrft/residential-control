@@ -18,6 +18,7 @@ String temperature;
 bool receiveTemp = false;
 bool on = false;
 bool userControl = false;
+bool started = false;
 int lumThreshold = 512;
 int tempThreshold = 50;
 bool isMotorOn = false;
@@ -117,9 +118,11 @@ void controlBuzzer(void) {
 }
 
 void callback() {
-  isMotorOn = false;
-  analogWrite(motor, 0);
-  MsTimer2::stop();
+  if (started) {
+    isMotorOn = false;
+    analogWrite(motor, 0);
+    MsTimer2::stop();
+  }
 }
 
 void setup() {
@@ -134,6 +137,7 @@ void setup() {
   pinMode(startButton, INPUT);
   pinMode(insidePresenceSensor, INPUT);
   pinMode(outsidePresenceSensor, INPUT);
+  digitalWrite(startButton, HIGH);
   digitalWrite(insidePresenceSensor, HIGH);
   digitalWrite(outsidePresenceSensor, HIGH);
   Serial.begin(9600);
@@ -143,14 +147,22 @@ void setup() {
 }
 
 void loop() {
-  if (!userControl) automaticControl();
-  controlBuzzer();
+  if (!digitalRead(startButton)) {
+    started = true;
+    digitalWrite(onOffLed, HIGH);
+  }
+  if (started) {
+    if (!userControl) automaticControl();
+    controlBuzzer();
+  }
 }
 
 void serialEvent() {
   while (Serial.available()) {
     char inChar = (char)Serial.read();
-    takeTemp(inChar);
-    takeCommand(inChar);
+    if (started) {
+      takeTemp(inChar);
+      takeCommand(inChar);
+    }
   }
 }
