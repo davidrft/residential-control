@@ -23,6 +23,9 @@ int tempThreshold = 50;
 bool isMotorOn = false;
 bool panic = false;
 bool openGate = true;
+bool insideLightState = false,
+     outsideLightState = false,
+     airConditionerState = false;
 int oldBuzzerValue = 0;
 void pToggle(int pin) {
   if (panic)
@@ -34,20 +37,38 @@ void toggle(int pin) { digitalWrite(pin, !digitalRead(pin)); }
 void automaticControl(void) {
   if (!digitalRead(insidePresenceSensor) &&
       analogRead(lumSensorIn) < lumThreshold)
+  {
     digitalWrite(insideLight, HIGH);
+    insideLightState = true;
+  }
   else
+  {
     digitalWrite(insideLight, LOW);
+    insideLightState = false;
+  }
 
   if (!digitalRead(outsidePresenceSensor) &&
       analogRead(lumSensorOut) < lumThreshold)
+  {
     digitalWrite(outsideLight, HIGH);
+    outsideLightState = true;
+  }
   else
+  {
     digitalWrite(outsideLight, LOW);
+    outsideLightState = false;
+  }
 
   if (analogRead(tempSensor) > tempThreshold)
+  {
     digitalWrite(airConditioner, HIGH);
+    airConditionerState = true;
+  }
   else
+  {
     digitalWrite(airConditioner, LOW);
+    airConditionerState = false;
+  }
 }
 
 void takeCommand(char in) {
@@ -58,10 +79,10 @@ void takeCommand(char in) {
     case 'Z':  // setar temperatura na forma Z123# , temperatura vai para 123
       receiveTemp = true;
       break;
-    case 'O':
+    case 'I':
       if (userControl) toggle(insideLight);
       break;
-    case 'I':
+    case 'O':
       if (userControl) toggle(outsideLight);
       break;
     case 'A':
@@ -90,6 +111,18 @@ void takeCommand(char in) {
       break;
     case 's':
       Serial.println(analogRead(lumSensorOut));
+      break;
+    case 'R':
+      int temp = (float)analogRead(tempSensor) * 100.0 * 5.0 / 1023.0;
+      Serial.print(temp);
+      Serial.print(' ');
+      Serial.print(insideLightState);
+      Serial.print(' ');
+      Serial.print(outsideLightState);
+      Serial.print(' ');
+      Serial.println(airConditionerState);
+      break;
+    default:
       break;
   }
 }
