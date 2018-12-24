@@ -81,13 +81,22 @@ void takeCommand(char in) {
       receiveTemp = true;
       break;
     case 'I':
-      if (userControl) toggle(insideLight);
+      if (userControl){ 
+        toggle(insideLight);
+        insideLightState = !insideLightState;
+      }
       break;
     case 'O':
-      if (userControl) toggle(outsideLight);
+      if (userControl){
+        toggle(outsideLight);
+        outsideLightState = !outsideLightState;
+        }
       break;
     case 'A':
-      if (userControl) toggle(airConditioner);
+      if (userControl) {
+        toggle(airConditioner);
+        airConditionerState = !airConditionerState;
+      }
       break;
     case 'P':
       panic = !panic;
