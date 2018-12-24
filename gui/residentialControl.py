@@ -4,7 +4,8 @@
 import sys
 from PyQt5.QtWidgets import (QWidget, QToolTip, 
     QPushButton, QApplication, QDesktopWidget,
-    QLabel, QLCDNumber, QGridLayout, QLineEdit)
+    QLabel, QLCDNumber, QGridLayout, QLineEdit,
+    QHBoxLayout)
 from PyQt5.QtGui import (QIcon, QFont, QColor)
 from PyQt5.QtCore import (QSize)
 
@@ -16,28 +17,28 @@ class MainWindow(QWidget):
         
 
     def initUI(self):
-        panicButton = QPushButton('PÂNICO', self)
-        panicButton.resize(panicButton.sizeHint())
-        panicButton.clicked.connect(self.panicButtonClicked)
+        self.panicButton = QPushButton('PÂNICO', self)
+        self.panicButton.resize(self.panicButton.sizeHint())
+        self.panicButton.clicked.connect(self.panicButtonClicked)
 
-        modeSwitch = QPushButton('MANUAL', self)
-        modeSwitch.resize(modeSwitch.sizeHint())
-        modeSwitch.clicked.connect(self.modeSwitchClicked)
+        self.modeSwitch = QPushButton('MANUAL', self)
+        self.modeSwitch.resize(self.modeSwitch.sizeHint())
+        self.modeSwitch.clicked.connect(self.modeSwitchClicked)
         self.modeSwitchState = True
 
-        # tempLabel = QLabel('Temperatura')
-        lumLabels = [QLabel('Luz Interna'), QLabel('Luz Externa')]
-        lightSwitchLabel = QLabel('Luz Interna')
-        lightSwitch2Label = QLabel('Luz Externa')
-        # gateSwitchLabel = QLabel('Portão')
-        serialInLabel = QLabel('Último dado recebido')
-        serialOutLabel = QLabel('Último dado enviado')
+        self.tempLabel = QLabel('Temperatura')
+        self.lightSwitchLabel = QLabel('Luz Interna')
+        self.lightSwitch2Label = QLabel('Luz Externa')
+        self.gateSwitchLabel = QLabel('Portão')
+        self.serialInLabel = QLabel('Último dado recebido')
+        self.serialOutLabel = QLabel('Último dado enviado')
 
         self.tempLCD = QLCDNumber()
         self.setTempThreshold = QLineEdit()
-        # self.lumLCD = [QLCDNumber(), QLCDNumber()]
+        self.setTempThresholdButton = QPushButton('DEFINIR', self)
+        self.setTempThresholdButton.clicked.connect(self.temperatureChanged)
 
-        self.airCondSwitch = QPushButton('Temperatura', self)
+        self.airCondSwitch = QPushButton(self)
         self.airCondSwitch.resize(self.airCondSwitch.sizeHint())
         self.airCondSwitch.clicked.connect(self.airCondSwitchClicked)
         self.airCondSwitch.setIcon(QIcon('imgs/airoff.png'))
@@ -58,7 +59,7 @@ class MainWindow(QWidget):
         self.lightSwitch2.setIconSize(QSize(51,51))
         self.lightSwitch2State = False
 
-        self.gateSwitch = QPushButton('Portão Fechado', self)
+        self.gateSwitch = QPushButton(self)
         self.gateSwitch.resize(self.gateSwitch.sizeHint())
         self.gateSwitch.clicked.connect(self.gateSwitchClicked)
         self.gateSwitch.setIcon(QIcon('imgs/gateclosed.png'))
@@ -68,46 +69,75 @@ class MainWindow(QWidget):
         self.serialIn = QLineEdit(self)
         self.serialOut = QLineEdit(self)
         self.serialOut.textChanged.connect(self.newDataSent)
+        self.temperatureThresholdLabel = QLabel('Limite de Temperatura')
+        self.airCondLabel = QLabel('Ar Condicionado')
 
-        grid = QGridLayout()
-        grid.setSpacing(10)
-
-        # grid.addWidget(tempLabel, 1, 0)
-        grid.addWidget(self.airCondSwitch, 1, 0)
-        grid.addWidget(self.tempLCD, 1, 1)
-        grid.addWidget(QLabel('Limite de Temperatura'), 1, 2)
-        grid.addWidget(self.setTempThreshold, 1, 3)
-        
-        # grid.addWidget(lumLabels[0], 2, 0)
-        # grid.addWidget(self.lumLCD[0], 2, 1)
-
-        # grid.addWidget(lumLabels[1], 3, 0)
-        # grid.addWidget(self.lumLCD[1], 3, 1)
-
-        grid.addWidget(lightSwitchLabel, 2, 2)
-        grid.addWidget(self.lightSwitch, 3, 2)
-        grid.addWidget(lightSwitch2Label, 2, 3)
-        grid.addWidget(self.lightSwitch2, 3, 3)
-
-        # grid.addWidget(gateSwitchLabel, 4, 2)
-        grid.addWidget(self.gateSwitch, 4, 3)
-
-        grid.addWidget(panicButton, 5, 1)
-
-        grid.addWidget(serialInLabel, 5, 2)
-        grid.addWidget(self.serialIn, 5, 3)
-
-        grid.addWidget(serialOutLabel, 6, 2)
-        grid.addWidget(self.serialOut, 6, 3)
-
-        self.setLayout(grid)
-        self.setGeometry(300, 300, 350, 300)
+        self.layoutGrids()
 
         self.setWindowIcon(QIcon('imgs/shouse.png'))
         self.setWindowTitle('Controle Residencial')
         self.center()
         self.show()
 
+    def layoutGrids(self):
+        gridSpacing = 10
+
+        self.temperatureBox = QHBoxLayout()
+        self.temperatureBox.setSpacing(gridSpacing)
+        self.temperatureBox.addWidget(self.tempLabel)
+        self.temperatureBox.addWidget(self.tempLCD)
+
+        self.temperatureThresholdGrid = QHBoxLayout()
+        self.temperatureThresholdGrid.setSpacing(gridSpacing)
+        self.temperatureThresholdGrid.addWidget(self.temperatureThresholdLabel)
+        self.temperatureThresholdGrid.addWidget(self.setTempThreshold)
+        self.temperatureThresholdGrid.addWidget(self.setTempThresholdButton)
+
+        self.airCondGrid = QHBoxLayout()
+        self.airCondGrid.setSpacing(gridSpacing)
+        self.airCondGrid.addWidget(self.airCondLabel)
+        self.airCondGrid.addWidget(self.airCondSwitch)
+
+        self.internalLightGrid = QHBoxLayout()
+        self.internalLightGrid.setSpacing(gridSpacing)
+        self.internalLightGrid.addWidget(self.lightSwitchLabel)
+        self.internalLightGrid.addWidget(self.lightSwitch)
+
+        self.externalLightGrid = QHBoxLayout()
+        self.externalLightGrid.setSpacing(gridSpacing)
+        self.externalLightGrid.addWidget(self.lightSwitch2Label)
+        self.externalLightGrid.addWidget(self.lightSwitch2)
+
+        self.gateGrid = QHBoxLayout()
+        self.gateGrid.setSpacing(gridSpacing)
+        self.gateGrid.addWidget(self.gateSwitchLabel)
+        self.gateGrid.addWidget(self.gateSwitch)
+
+        self.lastTxGrid = QHBoxLayout()
+        self.lastTxGrid.setSpacing(gridSpacing)
+        self.lastTxGrid.addWidget(self.serialOutLabel)
+        self.lastTxGrid.addWidget(self.serialOut)
+
+        self.lastRxGrid = QHBoxLayout()
+        self.lastRxGrid.setSpacing(gridSpacing)
+        self.lastRxGrid.addWidget(self.serialInLabel)
+        self.lastRxGrid.addWidget(self.serialIn)
+
+        grid = QGridLayout()
+        grid.setSpacing(gridSpacing)
+
+        gridElements = [self.temperatureThresholdGrid, self.temperatureBox, self.modeSwitch, \
+            self.airCondGrid, self.internalLightGrid, self.externalLightGrid, self.gateGrid, \
+            self.lastTxGrid, self.lastRxGrid, self.panicButton]
+        
+        for i in range(len(gridElements)):
+            if type(gridElements[i]) == QHBoxLayout:
+                grid.addLayout(gridElements[i], i, 0)
+            else:
+                grid.addWidget(gridElements[i], i, 0)
+
+        self.setLayout(grid)
+        self.setGeometry(300, 300, 350, 300)
 
     def panicButtonClicked(self):
         print(f'{self.sender().text()} was pressed')
@@ -202,9 +232,9 @@ class MainWindow(QWidget):
     
     def setLCDColor(self, lcd, color = 'r'):
         if color == 'r':
-            color = QColor(255, 0, 0)
+            color = QColor(213, 0, 0)
         elif color == 'g':
-            color = QColor(0, 255, 0)
+            color = QColor(27, 94, 32)
         else:
             return
 
@@ -233,8 +263,4 @@ if __name__ == '__main__':
 
     # USB_PORT = 'USB0'
     # com = serial.Serial(f'/dev/tty{USB_PORT}', 115200)
-    number = input('Type a number: ')
-    ex.tempLCD.display(number)
-    ex.newDataReceived('C')
-    ex.temperatureChanged()
     sys.exit(app.exec_())
