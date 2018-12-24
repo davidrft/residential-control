@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (QWidget, QToolTip,
     QHBoxLayout)
 from PyQt5.QtGui import (QIcon, QFont, QColor)
 from PyQt5.QtCore import (QSize)
+from timeit import default_timer as timer
 
 class MainWindow(QWidget):
     def __init__(self, port = None):
@@ -17,7 +18,9 @@ class MainWindow(QWidget):
         self.com = port
         self.initUI()
         
-
+    def initSerial(self, port = None):
+        self.com = port
+    
     def initUI(self):
         self.panicButton = QPushButton('PÂNICO', self)
         self.panicButton.resize(self.panicButton.sizeHint())
@@ -147,6 +150,8 @@ class MainWindow(QWidget):
 
     def panicButtonClicked(self):
         print(f'{self.sender().text()} was pressed')
+        if self.com:
+            self.com.write('P')
         return
         
     def modeSwitchClicked(self):
@@ -171,7 +176,8 @@ class MainWindow(QWidget):
             self.sender().setIcon(icon)
             # self.sender().setText('Luz 1 OFF' if self.lightSwitchState else 'Luz 1 ON')
             self.lightSwitchState = not self.lightSwitchState
-            self.commandReceived = False
+            if self.com:
+                self.com.write('I')
         else:
             return
 
@@ -182,7 +188,8 @@ class MainWindow(QWidget):
             self.sender().setIcon(icon)
             # self.sender().setText('Luz 1 OFF' if self.lightSwitchState else 'Luz 1 ON')
             self.airCondSwitchState = not self.airCondSwitchState
-            self.commandReceived = False
+            if self.com:
+                self.com.write('A')
         else:
             return
 
@@ -193,7 +200,8 @@ class MainWindow(QWidget):
             self.sender().setIcon(icon)
             # self.sender().setText('Luz 2 OFF' if self.lightSwitch2State else 'Luz 2 ON')
             self.lightSwitch2State = not self.lightSwitch2State
-            self.commandReceived = False
+            if self.com:
+                self.com.write('O')
         else:
             return
 
@@ -204,7 +212,8 @@ class MainWindow(QWidget):
             self.sender().setIcon(icon)
             self.gateSwitchState = not self.gateSwitchState
             self.sender().setChecked(False)
-            self.commandReceived = False
+            if self.com:
+                self.com.write('G')
         else:
             return
 
@@ -293,21 +302,26 @@ class MainWindow(QWidget):
         self.commandReceived = False
             
 if __name__ == '__main__':
-    # USB_PORT = ['USB0', 'USB1', 'ACM0', 'ACM1']
-    # for usb in USB_PORT:
-    #     try:
-    #         com = serial.Serial(f'/dev/tty{usb}', 115200)
-    #     except:
-    #         print("Tentativa...")
-    #         com = []
-    #     if com:
-    #         break
-    # if not com:
-    #     raise Exception("Não há nenhuma porta serial disponível")
-
     app = QApplication(sys.argv)
     ex = MainWindow()
 
-    # USB_PORT = 'USB0'
-    # com = serial.Serial(f'/dev/tty{USB_PORT}', 115200)
+    USB_PORT = ['USB0', 'USB1', 'ACM0', 'ACM1']
+    for usb in USB_PORT:
+        try:
+            com = serial.Serial(f'/dev/tty{usb}', 115200)
+        except:
+            print("Tentativa...")
+            com = []
+        if com:
+            break
+    if not com:
+        raise Exception("Não há nenhuma porta serial disponível")
+
+    ex.initSerial(com)
+
+    last = timer()
+    while(True):
+        if timer() - last > 1:
+            ex.requestData()
+            last = timer()
     sys.exit(app.exec_())
