@@ -35,6 +35,8 @@ class MainWindow(QWidget):
 
         self.tempLCD = QLCDNumber()
         self.setTempThreshold = QLineEdit()
+        self.setTempThreshold.setText('25')
+        self.temperatureChanged()
         self.setTempThresholdButton = QPushButton('DEFINIR', self)
         self.setTempThresholdButton.clicked.connect(self.temperatureChanged)
 
@@ -68,6 +70,8 @@ class MainWindow(QWidget):
 
         self.serialIn = QLineEdit(self)
         self.serialOut = QLineEdit(self)
+        self.serialIn.setReadOnly(True)
+        self.serialOut.setReadOnly(True)
         self.serialOut.textChanged.connect(self.newDataSent)
         self.temperatureThresholdLabel = QLabel('Limite de Temperatura')
         self.airCondLabel = QLabel('Ar Condicionado')
@@ -195,7 +199,6 @@ class MainWindow(QWidget):
         print(f'{self.sender().text()} was pressed')
         if self.modeSwitchState or self.commandReceived:
             icon = QIcon('imgs/gateclosed.png' if self.gateSwitchState else 'imgs/gateopen.png')
-            self.sender().setText('Portão Fechado' if self.gateSwitchState else 'Portão Aberto')
             self.sender().setIcon(icon)
             self.gateSwitchState = not self.gateSwitchState
             self.sender().setChecked(False)
