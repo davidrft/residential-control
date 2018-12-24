@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import serial
 from PyQt5.QtWidgets import (QWidget, QToolTip, 
     QPushButton, QApplication, QDesktopWidget,
     QLabel, QLCDNumber, QGridLayout, QLineEdit,
@@ -10,9 +11,10 @@ from PyQt5.QtGui import (QIcon, QFont, QColor)
 from PyQt5.QtCore import (QSize)
 
 class MainWindow(QWidget):
-    def __init__(self):
+    def __init__(self, port = None):
         super().__init__()
-        
+    
+        self.com = port
         self.initUI()
         
 
@@ -223,16 +225,6 @@ class MainWindow(QWidget):
 
         return
     
-    def newDataReceived(self, data):
-        # proccess received data, e.g. call temperatureChanged
-        self.serialIn.setText(data)
-        return
-
-    def newDataSent(self):
-        print(self.serialOut.text()) # debug functionality
-        # sent data via serial
-        return
-    
     def setLCDColor(self, lcd, color = 'r'):
         if color == 'r':
             color = QColor(213, 0, 0)
@@ -257,10 +249,62 @@ class MainWindow(QWidget):
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
-        
-        
+
+    def newDataReceived(self, data):
+        # proccess received data, e.g. call temperatureChanged
+        self.serialIn.setText(data)
+        return
+
+    def newDataSent(self):
+        print(self.serialOut.text()) # debug functionality
+        # sent data via serial
+        return
+
+    def requestData(self):
+        c = 'x'
+        msg = []
+        self.commandReceived = True
+        if self.com:
+            com.write('R')
+            while c != '\n':
+                c = self.com.read()
+                msg.append(c)
+            msg = msg.split()
+            temp = int(msg[0])
+            self.tempLCD.display(temp)
+            if int(msg[1]):
+                self.lightSwitchState = False
+                self.lightSwitchClicked()
+            else:
+                self.lightSwitchState = True
+                self.lightSwitchClicked()
+            if int(msg[2]):
+                self.lightSwitch2State = False
+                self.lightSwitch2Clicked()
+            else:
+                self.lightSwitch2State = True
+                self.lightSwitch2Clicked()
+            if int(msg[3]):
+                self.airCondSwitchState = False
+                self.airCondSwitchClicked()
+            else:
+                self.airCondSwitchState = True
+                self.airCondSwitchClicked()
+        self.commandReceived = False
+            
 if __name__ == '__main__':
-    
+    # USB_PORT = ['USB0', 'USB1', 'ACM0', 'ACM1']
+    # for usb in USB_PORT:
+    #     try:
+    #         com = serial.Serial(f'/dev/tty{usb}', 115200)
+    #     except:
+    #         print("Tentativa...")
+    #         com = []
+    #     if com:
+    #         break
+    # if not com:
+    #     raise Exception("Não há nenhuma porta serial disponível")
+
     app = QApplication(sys.argv)
     ex = MainWindow()
 
