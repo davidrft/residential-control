@@ -77,7 +77,7 @@ class MainWindow(QWidget):
         self.serialOut = QLineEdit(self)
         self.serialIn.setReadOnly(True)
         self.serialOut.setReadOnly(True)
-        self.serialOut.textChanged.connect(self.newDataSent)
+        # self.serialOut.textChanged.connect(self.newDataSent)
         self.temperatureThresholdLabel = QLabel('Limite de Temperatura')
         self.airCondLabel = QLabel('Ar Condicionado')
 
@@ -148,10 +148,20 @@ class MainWindow(QWidget):
         self.setLayout(grid)
         self.setGeometry(300, 300, 350, 300)
 
+    def sendSerialCommand(self, command):
+        # send data over serial and updates serialOut text box
+        self.sendSerialCommand(command)
+        self.serialOut.setText(command)
+
+    def newDataReceived(self, data):
+        # proccess received data, e.g. call temperatureChanged
+        self.serialIn.setText(data)
+        return
+
     def panicButtonClicked(self):
         print(f'{self.sender().text()} was pressed')
         if self.com:
-            self.com.write('P')
+            self.sendSerialCommand('P')
         return
         
     def modeSwitchClicked(self):
@@ -177,7 +187,7 @@ class MainWindow(QWidget):
             # self.sender().setText('Luz 1 OFF' if self.lightSwitchState else 'Luz 1 ON')
             self.lightSwitchState = not self.lightSwitchState
             if self.com:
-                self.com.write('I')
+                self.sendSerialCommand('I')
         else:
             return
 
@@ -189,7 +199,7 @@ class MainWindow(QWidget):
             # self.sender().setText('Luz 1 OFF' if self.lightSwitchState else 'Luz 1 ON')
             self.airCondSwitchState = not self.airCondSwitchState
             if self.com:
-                self.com.write('A')
+                self.sendSerialCommand('A')
         else:
             return
 
@@ -201,7 +211,7 @@ class MainWindow(QWidget):
             # self.sender().setText('Luz 2 OFF' if self.lightSwitch2State else 'Luz 2 ON')
             self.lightSwitch2State = not self.lightSwitch2State
             if self.com:
-                self.com.write('O')
+                self.sendSerialCommand('O')
         else:
             return
 
@@ -213,7 +223,7 @@ class MainWindow(QWidget):
             self.gateSwitchState = not self.gateSwitchState
             self.sender().setChecked(False)
             if self.com:
-                self.com.write('G')
+                self.sendSerialCommand('G')
         else:
             return
 
@@ -259,22 +269,12 @@ class MainWindow(QWidget):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-    def newDataReceived(self, data):
-        # proccess received data, e.g. call temperatureChanged
-        self.serialIn.setText(data)
-        return
-
-    def newDataSent(self):
-        print(self.serialOut.text()) # debug functionality
-        # sent data via serial
-        return
-
     def requestData(self):
         c = 'x'
         msg = []
         self.commandReceived = True
         if self.com:
-            com.write('R')
+            self.sendSerialCommand('R')
             while c != '\n':
                 c = self.com.read()
                 msg.append(c)
