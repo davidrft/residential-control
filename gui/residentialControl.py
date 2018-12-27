@@ -26,10 +26,10 @@ class MainWindow(QWidget):
         self.panicButton.resize(self.panicButton.sizeHint())
         self.panicButton.clicked.connect(self.panicButtonClicked)
 
-        self.modeSwitch = QPushButton('MANUAL', self)
+        self.modeSwitch = QPushButton('Auto', self)
         self.modeSwitch.resize(self.modeSwitch.sizeHint())
         self.modeSwitch.clicked.connect(self.modeSwitchClicked)
-        self.modeSwitchState = True
+        self.modeSwitchState = False
 
         self.tempLabel = QLabel('Temperatura')
         self.lightSwitchLabel = QLabel('Luz Interna')
@@ -86,6 +86,7 @@ class MainWindow(QWidget):
         self.setWindowIcon(QIcon('imgs/shouse.png'))
         self.setWindowTitle('Controle Residencial')
         self.center()
+        self.disableButtons(True)
         self.show()
 
     def layoutGrids(self):
