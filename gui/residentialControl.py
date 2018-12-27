@@ -275,11 +275,10 @@ class MainWindow(QWidget):
         self.commandReceived = True
         if self.com:
             self.sendSerialCommand('R')
-            while c != '\n':
-                c = self.com.read()
-                msg.append(c)
+            msg= self.com.readline().decode('utf=8')
             msg = msg.split()
             temp = int(msg[0])
+            print(temp);
             self.tempLCD.display(temp)
             if int(msg[1]):
                 self.lightSwitchState = False
@@ -305,10 +304,10 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MainWindow()
 
-    USB_PORT = ['USB0', 'USB1', 'ACM0', 'ACM1']
+    USB_PORT = [ 'ACM2', 'USB0', 'USB1', 'ACM0', 'ACM1']
     for usb in USB_PORT:
         try:
-            com = serial.Serial(f'/dev/tty{usb}', 115200)
+            com = serial.Serial(f'/dev/tty{usb}', 9600)
         except:
             print("Tentativa...")
             com = []
