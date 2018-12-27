@@ -154,6 +154,7 @@ class MainWindow(QWidget):
 
     def sendSerialCommand(self, command):
         # send data over serial and updates serialOut text box
+        #print("command {command} sent")
         self.com.write(command.encode())
         self.serialOut.setText(command)
 
@@ -170,6 +171,7 @@ class MainWindow(QWidget):
         
     def modeSwitchClicked(self):
         print(f'{self.sender().text()} was pressed')
+        self.sendSerialCommand('U')
         self.sender().setText('AUTO' if self.modeSwitchState else 'MANUAL')
         self.modeSwitchState = not self.modeSwitchState
         self.sender().setChecked(False)
@@ -295,24 +297,25 @@ class MainWindow(QWidget):
             temp = int(msg[0])
             print(temp);
             self.tempLCD.display(temp)
-            if int(msg[1]):
-                self.lightSwitchState = False
-                self.toggleLightSwitch(self.lightSwitch)
-            else:
-                self.lightSwitchState = True
-                self.toggleLightSwitch(self.lightSwitch)
-            if int(msg[2]):
-                self.lightSwitch2State = False
-                self.toggleLightSwitch(self.lightSwitch2)
-            else:
-                self.lightSwitch2State = True
-                self.toggleLightSwitch(self.lightSwitch2)
-            if int(msg[3]):
-                self.airCondSwitchState = False
-                self.toggleAirCond()
-            else:
-                self.airCondSwitchState = True
-                self.toggleAirCond()
+            if not self.modeSwitchState:
+                if int(msg[1]):
+                    self.lightSwitchState = False
+                    self.toggleLightSwitch(self.lightSwitch)
+                else:
+                    self.lightSwitchState = True
+                    self.toggleLightSwitch(self.lightSwitch)
+                if int(msg[2]):
+                    self.lightSwitch2State = False
+                    self.toggleLightSwitch(self.lightSwitch2)
+                else:
+                    self.lightSwitch2State = True
+                    self.toggleLightSwitch(self.lightSwitch2)
+                if int(msg[3]):
+                    self.airCondSwitchState = False
+                    self.toggleAirCond()
+                else:
+                    self.airCondSwitchState = True
+                    self.toggleAirCond()
         self.commandReceived = False
 
 class SerialThread(QThread):
