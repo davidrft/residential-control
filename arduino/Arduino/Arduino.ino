@@ -122,15 +122,16 @@ void takeCommand(char in) {
     case 's':
       Serial.println(analogRead(lumSensorOut));
       break;
-    case 'R':
-      int temp = (float)analogRead(tempSensor) * 100.0 * 5.0 / 1023.0;
-      Serial.print(temp);
-      Serial.print(' ');
-      Serial.print(insideLightState);
-      Serial.print(' ');
-      Serial.print(outsideLightState);
-      Serial.print(' ');
-      Serial.println(airConditionerState);
+    case 'R':{
+        int temp = (float)analogRead(tempSensor) * 100.0 * 5.0 / 1023.0;
+        Serial.print(temp);
+        Serial.print(' ');
+        Serial.print(insideLightState);
+        Serial.print(' ');
+        Serial.print(outsideLightState);
+        Serial.print(' ');
+        Serial.println(airConditionerState);
+      }
       break;
     default:
       break;
