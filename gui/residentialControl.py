@@ -181,9 +181,12 @@ class MainWindow(QWidget):
 
     def lightSwitchClicked(self):
         print(f'{self.sender().text()} was pressed')
+        self.toggleLightSwitch(self.sender())
+
+    def toggleLightSwitch(self, lightSwitch):
         if self.modeSwitchState or self.commandReceived:
             icon = QIcon('imgs/luzoff.png' if self.lightSwitchState else 'imgs/luzon.png')
-            self.sender().setIcon(icon)
+            lightSwitch.setIcon(icon)
             # self.sender().setText('Luz 1 OFF' if self.lightSwitchState else 'Luz 1 ON')
             self.lightSwitchState = not self.lightSwitchState
             if self.com:
@@ -193,9 +196,12 @@ class MainWindow(QWidget):
 
     def airCondSwitchClicked(self):
         print(f'{self.sender().text()} was pressed')
+        self.toggleAirCond()
+
+    def toggleAirCond(self):
         if self.modeSwitchState or self.commandReceived:
             icon = QIcon('imgs/airoff.png' if self.airCondSwitchState else 'imgs/airon.png')
-            self.sender().setIcon(icon)
+            self.airCondSwitch.setIcon(icon)
             # self.sender().setText('Luz 1 OFF' if self.lightSwitchState else 'Luz 1 ON')
             self.airCondSwitchState = not self.airCondSwitchState
             if self.com:
@@ -282,22 +288,22 @@ class MainWindow(QWidget):
             self.tempLCD.display(temp)
             if int(msg[1]):
                 self.lightSwitchState = False
-                self.lightSwitchClicked()
+                self.toggleLightSwitch(self.lightSwitch)
             else:
                 self.lightSwitchState = True
-                self.lightSwitchClicked()
+                self.toggleLightSwitch(self.lightSwitch)
             if int(msg[2]):
                 self.lightSwitch2State = False
-                self.lightSwitch2Clicked()
+                self.toggleLightSwitch(self.lightSwitch2)
             else:
                 self.lightSwitch2State = True
-                self.lightSwitch2Clicked()
+                self.toggleLightSwitch(self.lightSwitch2)
             if int(msg[3]):
                 self.airCondSwitchState = False
-                self.airCondSwitchClicked()
+                self.toggleAirCond()
             else:
                 self.airCondSwitchState = True
-                self.airCondSwitchClicked()
+                self.toggleAirCond()
         self.commandReceived = False
             
 if __name__ == '__main__':
