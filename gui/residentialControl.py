@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (QWidget, QToolTip,
     QLabel, QLCDNumber, QGridLayout, QLineEdit,
     QHBoxLayout)
 from PyQt5.QtGui import (QIcon, QFont, QColor)
-from PyQt5.QtCore import (QSize)
+from PyQt5.QtCore import (QSize, QThread)
 from timeit import default_timer as timer
 
 class MainWindow(QWidget):
@@ -81,6 +81,8 @@ class MainWindow(QWidget):
         self.temperatureThresholdLabel = QLabel('Limite de Temperatura')
         self.airCondLabel = QLabel('Ar Condicionado')
 
+        self.serialThread = SerialThread(self.requestData)
+
         self.layoutGrids()
 
         self.setWindowIcon(QIcon('imgs/shouse.png'))
@@ -88,6 +90,7 @@ class MainWindow(QWidget):
         self.center()
         self.disableButtons(True)
         self.show()
+        self.serialThread.start()
 
     def layoutGrids(self):
         gridSpacing = 10
@@ -282,8 +285,12 @@ class MainWindow(QWidget):
         msg = []
         self.commandReceived = True
         if self.com:
-            self.sendSerialCommand('R')
-            msg= self.com.readline().decode('utf=8')
+            self.com.write(b'R')
+            msg = self.com.readline()
+            self.serialOut.setText('R')
+            self.serialIn.setText(f'{msg}')
+            print('R sent')
+            print(f'msg = {msg}')
             msg = msg.split()
             temp = int(msg[0])
             print(temp);
@@ -307,6 +314,16 @@ class MainWindow(QWidget):
                 self.airCondSwitchState = True
                 self.toggleAirCond()
         self.commandReceived = False
+
+class SerialThread(QThread):
+    def __init__(self, requestData):
+        QThread.__init__(self)
+        self.requestData = requestData
+
+    def run(self):
+        while(True):
+            self.requestData()
+            self.sleep(1)
             
 if __name__ == '__main__':
     app = QApplication(sys.argv)
@@ -326,9 +343,5 @@ if __name__ == '__main__':
 
     ex.initSerial(com)
 
-    last = timer()
-    while(True):
-        if timer() - last > 1:
-            ex.requestData()
-            last = timer()
+
     sys.exit(app.exec_())
