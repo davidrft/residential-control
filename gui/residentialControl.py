@@ -240,6 +240,7 @@ class MainWindow(QWidget):
     def temperatureChanged(self):
         try:
             tempThreshold = int(self.setTempThreshold.text())
+            self.sendSerialCommand(f"Z{tempThreshold}#")
         except:
             print('!!!! WARNING !!!! Invalid temperature threshold')
             tempThreshold = self.tempLCD.value()
