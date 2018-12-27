@@ -150,7 +150,7 @@ class MainWindow(QWidget):
 
     def sendSerialCommand(self, command):
         # send data over serial and updates serialOut text box
-        self.sendSerialCommand(command)
+        self.com.write(command.encode())
         self.serialOut.setText(command)
 
     def newDataReceived(self, data):
