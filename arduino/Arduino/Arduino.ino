@@ -3,16 +3,18 @@
 #define insideLight 13
 #define outsideLight 12
 #define airConditioner 11
-#define motor 9
 #define buzzer 10
-#define onOffLed 8
-#define startButton 7
-#define insidePresenceSensor 6
-#define outsidePresenceSensor 5
+#define motor 9
+#define dirA 8
+#define dirB 7
+#define onOffLed 5
+#define startButton 4 
+#define insidePresenceSensor 3
+#define outsidePresenceSensor 2
 #define lumSensorIn A1
 #define lumSensorOut A2
 #define tempSensor A0
-#define openOrClose 2
+
 
 String temperature;
 bool receiveTemp = false;
@@ -34,9 +36,23 @@ void pToggle(int pin) {
   else
     analogWrite(pin, oldBuzzerValue);
 }
+void callbackInsidePresence(void){
+  if(insideLightState){
+    digitalWrite(insideLight, HIGH);
+  }else{
+    digitalWrite(insideLight, LOW);  
+  }
+}
+void callbackOutsidePresence(void){
+    if(outsideLightState){
+    digitalWrite(outsideLightState, HIGH);
+  }else{
+    digitalWrite(outsideLightState, LOW);  
+  }
+}
 void toggle(int pin) { digitalWrite(pin, !digitalRead(pin)); }
 void automaticControl(void) {
-  if (!digitalRead(insidePresenceSensor) &&
+  if (digitalRead(insidePresenceSensor) &&
       analogRead(lumSensorIn) < lumThreshold)
   {
     digitalWrite(insideLight, HIGH);
@@ -48,7 +64,7 @@ void automaticControl(void) {
     insideLightState = false;
   }
 
-  if (!digitalRead(outsidePresenceSensor) &&
+  if (digitalRead(outsidePresenceSensor) &&
       analogRead(lumSensorOut) < lumThreshold)
   {
     digitalWrite(outsideLight, HIGH);
@@ -103,10 +119,14 @@ void takeCommand(char in) {
       pToggle(buzzer);
       break;
     case 'G':
-      if (openGate)
-        digitalWrite(openOrClose, HIGH);
-      else
-        digitalWrite(openOrClose, LOW);
+      if (openGate){
+        digitalWrite(dirA, HIGH);
+        digitalWrite(dirB, LOW);
+      }
+      else{
+        digitalWrite(dirA, LOW);
+        digitalWrite(dirB, HIGH);
+      }
       openGate = !openGate;
       analogWrite(motor, 128);
       isMotorOn = true;
@@ -153,7 +173,7 @@ void controlBuzzer(void) {
     analogWrite(buzzer, oldBuzzerValue);
     if (isMotorOn)
       oldBuzzerValue = 128;
-    else if (!digitalRead(outsidePresenceSensor))
+    else if (digitalRead(outsidePresenceSensor))
       oldBuzzerValue = 64;
     else
       oldBuzzerValue = 0;
@@ -176,7 +196,8 @@ void setup() {
   pinMode(buzzer, OUTPUT);
   pinMode(onOffLed, OUTPUT);
   pinMode(onOffLed, OUTPUT);
-  pinMode(openOrClose, OUTPUT);
+  pinMode(dirA, OUTPUT);
+  pinMode(dirB, OUTPUT);
   pinMode(startButton, INPUT);
   pinMode(insidePresenceSensor, INPUT);
   pinMode(outsidePresenceSensor, INPUT);
@@ -190,7 +211,7 @@ void setup() {
 }
 
 void loop() {
-  if (!digitalRead(startButton)) {
+  if (digitalRead(startButton)) {
     started = true;
     digitalWrite(onOffLed, HIGH);
   }
@@ -208,4 +229,10 @@ void serialEvent() {
       takeCommand(inChar);
     }
   }
+}
+
+void presenceEvent(){
+     callbackInsidePresence();
+     callbackOutsidePresence();
+  
 }
