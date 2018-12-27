@@ -1,27 +1,53 @@
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   - - - - - - PROJETO FINAL - MICROCOMPUTADORES: CASA INTELIGENTE - - - - - - - - - - - - - - - - - -
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   -
+   -  ALUNOS ENVOLVIDOS:
+   -  => AFONSO DE SÁ DELGADO NETO
+   -  => DAVID RIFF DE FRANÇA TENÓRIO
+   -  => DIEGO MAIA HAMILTON
+   -  => EWELIM DAYANE DE SOUZA BARROS
+   -
+   -  VERSÃO: 1.0
+   -  DATA: 27/12/2018
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  -                         DESCRIÇÃO DO ARQUIVO
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  -
+  - O PROJETO APRESENTA UMA SOLUÇÃO DE UM SISTEMA EMBARCADO INTEGRADO A UMA INTERFACE VISUAL PARA
+  - CONTROLE RESIDENCIAL AUTOMÁTICO OU REMOTO. O CONTROLE INCLUI: MOTOR DO PORTÃO DA GARAGEM, LUZES EM
+  - DOIS AMBIENTES E AR-CONDICIONADO. NO DESENVOLVIMENTO, FOI UTILIZADO O MICROCONTROLADOR ATMEGA328P E
+  - A PLATAFORMA ARDUINO, ALÉM DE SIMULAÇÕES NO PROTEUS E O DESENVOLVIMENTO DE UMA INTERFACE EM PYTHON,
+  - CULMINANDO NUM PROTÓTIPO EM HARDWARE FÍSICO.
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+*/
+
+
+
+
 #include <MsTimer2.h>
 
-#define insideLight 13
-#define outsideLight 12
-#define airConditioner 11
-#define buzzer 10
-#define motor 9
-#define dirA 8
-#define dirB 7
-#define onOffLed 5
-#define startButton 4 
-#define insidePresenceSensor 3
-#define outsidePresenceSensor 2
-#define lumSensorIn A1
-#define lumSensorOut A2
-#define tempSensor A0
+#define insideLight 13                 //pino da luz interna
+#define outsideLight 12                //pino da luz externa
+#define airConditioner 11              //pino do ar condicionado
+#define buzzer 10                      //pino da buzina
+#define motor 9                        //pino do motor
+#define dirA 8                         //pino de controle ponte H
+#define dirB 7                         //pino de controle ponte H
+#define onOffLed 5                     //LED partida
+#define startButton 4                  //pino de partida
+#define insidePresenceSensor 3         //pino do sensor de presença interno
+#define outsidePresenceSensor 2        //pino do sensor de presença externo
+#define lumSensorIn A1                 //pino do sensor de luminosidade interno
+#define lumSensorOut A2                //pino do sensor de luminosidade externo
+#define tempSensor A0                  //pino do sensor de temperatura
 
-
-String temperature;
+String temperature;                    //string de temperatura
 bool receiveTemp = false;
 bool on = false;
 bool userControl = false;
 bool started = false;
-int lumThreshold = 512;
+int lumThreshold = 50;
 int tempThreshold = 50;
 bool isMotorOn = false;
 bool panic = false;
@@ -30,28 +56,30 @@ bool insideLightState = false,
      outsideLightState = false,
      airConditionerState = false;
 int oldBuzzerValue = 0;
-void pToggle(int pin) {
+void pToggle(int pin) {                //toggle no buzzer - pânico
   if (panic)
     analogWrite(pin, 230);
   else
     analogWrite(pin, oldBuzzerValue);
 }
-void callbackInsidePresence(void){
-  if(insideLightState){
+void callbackInsidePresence(void) {   //função de callback para interrupção de presença interna
+  if (insideLightState) {
     digitalWrite(insideLight, HIGH);
-  }else{
-    digitalWrite(insideLight, LOW);  
+  } else {
+    digitalWrite(insideLight, LOW);
   }
 }
-void callbackOutsidePresence(void){
-    if(outsideLightState){
+void callbackOutsidePresence(void) {  //função de callback para interrupção de presença externa
+  if (outsideLightState) {
     digitalWrite(outsideLightState, HIGH);
-  }else{
-    digitalWrite(outsideLightState, LOW);  
+  } else {
+    digitalWrite(outsideLightState, LOW);
   }
 }
-void toggle(int pin) { digitalWrite(pin, !digitalRead(pin)); }
-void automaticControl(void) {
+void toggle(int pin) {
+  digitalWrite(pin, !digitalRead(pin));  //toggle de pino
+}
+void automaticControl(void) {                                  //controle automático do programa
   if (digitalRead(insidePresenceSensor) &&
       analogRead(lumSensorIn) < lumThreshold)
   {
@@ -88,42 +116,42 @@ void automaticControl(void) {
   }
 }
 
-void takeCommand(char in) {
+void takeCommand(char in) {                          //receber comando da serial
   switch (in) {
-    case 'U':
+    case 'U':                                        //controle do usuário
       userControl = !userControl;
       break;
-    case 'Z':  // setar temperatura na forma Z123# , temperatura vai para 123
+    case 'Z':                                   // setar temperatura na forma Z123# , temperatura vai para 123
       receiveTemp = true;
       break;
-    case 'I':
-      if (userControl){ 
+    case 'I':                                       //acende ou apaga luz interna
+      if (userControl) {
         toggle(insideLight);
         insideLightState = !insideLightState;
       }
       break;
-    case 'O':
-      if (userControl){
+    case 'O':                                       //acende ou apaga luz externa
+      if (userControl) {
         toggle(outsideLight);
         outsideLightState = !outsideLightState;
-        }
+      }
       break;
-    case 'A':
+    case 'A':                                       //acende ou apaga ar
       if (userControl) {
         toggle(airConditioner);
         airConditionerState = !airConditionerState;
       }
       break;
-    case 'P':
+    case 'P':                                       //pânico
       panic = !panic;
       pToggle(buzzer);
       break;
-    case 'G':
-      if (openGate){
+    case 'G':                                       //
+      if (openGate) {
         digitalWrite(dirA, HIGH);
         digitalWrite(dirB, LOW);
       }
-      else{
+      else {
         digitalWrite(dirA, LOW);
         digitalWrite(dirB, HIGH);
       }
@@ -133,16 +161,16 @@ void takeCommand(char in) {
       MsTimer2::start();
       break;
     case 'T': {
-      int temp = (float)analogRead(tempSensor) * 100.0 * 5.0 / 1023.0;
-      Serial.println(temp);
-    } break;
+        int temp = (float)analogRead(tempSensor) * 100.0 * 5.0 / 1023.0;
+        Serial.println(temp);
+      } break;
     case 'S':
       Serial.println(analogRead(lumSensorIn));
       break;
     case 's':
       Serial.println(analogRead(lumSensorOut));
       break;
-    case 'R':{
+    case 'R': {
         int temp = (float)analogRead(tempSensor) * 100.0 * 5.0 / 1023.0;
         Serial.print(temp);
         Serial.print(' ');
@@ -157,7 +185,7 @@ void takeCommand(char in) {
       break;
   }
 }
-void takeTemp(char in) {
+void takeTemp(char in) {                            //obter valor de temperatura
   if (receiveTemp) {
     if (in == '#') {
       receiveTemp = false;
@@ -168,7 +196,7 @@ void takeTemp(char in) {
   }
 }
 
-void controlBuzzer(void) {
+void controlBuzzer(void) {                            //controlar a buzina
   if (!panic) {
     analogWrite(buzzer, oldBuzzerValue);
     if (isMotorOn)
@@ -180,7 +208,7 @@ void controlBuzzer(void) {
   }
 }
 
-void callback() {
+void callback() {                                    //callback do timer
   if (started) {
     isMotorOn = false;
     analogWrite(motor, 0);
@@ -188,7 +216,7 @@ void callback() {
   }
 }
 
-void setup() {
+void setup() {                                      //declaração de pinos e inicialização do serial e timer
   pinMode(insideLight, OUTPUT);
   pinMode(outsideLight, OUTPUT);
   pinMode(airConditioner, OUTPUT);
@@ -206,11 +234,11 @@ void setup() {
   digitalWrite(outsidePresenceSensor, HIGH);
   Serial.begin(9600);
   temperature.reserve(200);
-  MsTimer2::set(1000, callback);  // 500ms period
+  MsTimer2::set(1000, callback);  //1s period
   MsTimer2::start();
 }
 
-void loop() {
+void loop() {                           //loop principal
   if (digitalRead(startButton)) {
     started = true;
     digitalWrite(onOffLed, HIGH);
@@ -221,7 +249,7 @@ void loop() {
   }
 }
 
-void serialEvent() {
+void serialEvent() {                    //interrupção serial
   while (Serial.available()) {
     char inChar = (char)Serial.read();
     if (started) {
@@ -231,8 +259,8 @@ void serialEvent() {
   }
 }
 
-void presenceEvent(){
-     callbackInsidePresence();
-     callbackOutsidePresence();
-  
+void presenceEvent() {                  //interrupção de presença
+  callbackInsidePresence();
+  callbackOutsidePresence();
+
 }
